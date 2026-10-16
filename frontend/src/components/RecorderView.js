@@ -120,9 +120,12 @@ export default function RecorderView() {
   }, [joined, idsKey]);
 
   // ── Network alerts ─────────────────────────────────────────────────────────
-  // Both inbound streams travel over the recorder's own link, so a party is
-  // only blamed on POSITIVE evidence that link is clean: the other party's
-  // stream is "ok" (never "unknown"). If both degrade together it's our side.
+  // "Our own link is fine" here means the recorder itself is connected: it runs
+  // on VideoSDK's infrastructure, not someone's last mile. While it isn't, both
+  // watches stand down (reset to "unknown"), so nobody gets blamed for our
+  // outage. Each party is otherwise judged on its own stream — gating one on
+  // the other would hide the case where both are bad, and release a stale
+  // "unstable" the moment the other side cleared.
   const isConnected = joined && meetingState === "CONNECTED";
   const doctorNetwork = useNetworkWatch({
     participantId: doctorId,
@@ -133,8 +136,8 @@ export default function RecorderView() {
     enabled: isConnected && !!patientId,
   });
   const networkAlerts = [
-    ...(patientNetwork === "ok" ? networkAlertsFor("Doctor", doctorNetwork) : []),
-    ...(doctorNetwork === "ok" ? networkAlertsFor("Patient", patientNetwork) : []),
+    ...networkAlertsFor("Doctor", doctorNetwork),
+    ...networkAlertsFor("Patient", patientNetwork),
   ];
 
   return (
