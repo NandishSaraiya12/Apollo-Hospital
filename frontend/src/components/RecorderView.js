@@ -70,7 +70,9 @@ function networkAlertsFor(label, status) {
 
 export default function RecorderView() {
   const [joined, setJoined] = useState(false);
-  const [meetingState, setMeetingState] = useState(null);
+  // Same default as the call app: the SDK only reports changes, and `joined`
+  // already keeps the watches off until we're actually in.
+  const [meetingState, setMeetingState] = useState("CONNECTED");
 
   // Sender ids seen per role. Kept as sets so a patient who rejoined with a new
   // id still resolves — only ids actually in the room are used below.

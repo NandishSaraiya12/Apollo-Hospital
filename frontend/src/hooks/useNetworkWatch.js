@@ -135,6 +135,18 @@ export default function useNetworkWatch({ participantId, enabled = true }) {
 
       const isBad = lossBad || jitterBad || bitrateBad || frozenBad || droppedBad;
 
+      // Live numbers per participant: window.__netWatch in the console of an
+      // open template tab.
+      window.__netWatch = window.__netWatch || {};
+      window.__netWatch[participantId] = {
+        lossPct: expected ? +((lost / expected) * 100).toFixed(2) : null,
+        expected, jitter: s.jitter, kbps: Math.round(s.bitrate), isVideo,
+        frozen: deltaFreezeSec != null && elapsedMs ? +(deltaFreezeSec / (elapsedMs / 1000)).toFixed(3) : null,
+        dropped: deltaReceived ? +(deltaDropped / deltaReceived).toFixed(3) : null,
+        flags: { lossBad, jitterBad, bitrateBad, frozenBad, droppedBad },
+        bad: badRef.current, good: goodRef.current,
+      };
+
       badRef.current = isBad ? badRef.current + 1 : 0;
       goodRef.current = isBad ? 0 : goodRef.current + 1;
 
